@@ -16,7 +16,7 @@
 #include <map>
 #include <sys/epoll.h>
 
-#define MAX_WORKER_THREADS 1
+#define MAX_WORKER_THREADS 10
 
 namespace mdm {
 namespace mddproxy {

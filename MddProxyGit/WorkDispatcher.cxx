@@ -22,7 +22,7 @@ WorkDispatcher::WorkDispatcher(WorkItemsT* rcvrs, size_t maxWorkerThreads)
 	busyWorkers = new std::deque<Worker*>;
 
 	totalWorkerCount = 0;
-	AddWorkers(1);
+	AddWorkers(5);
 }
 
 WorkDispatcher::~WorkDispatcher() {
