@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Receivers>
+    <Receiver name="TOB_SI_C1" id="1" protocol="UDP" type="Multicast" ip="239.2.1.40" port="18576"/>
+    <Receiver name="TOB_SI_C2" id="2" protocol="UDP" type="Unicast" ip="239.2.1.50" port="18578"/>
+</Receivers>
+<Senders>
+    <Sender id="101" protocol="UDP" type="Multicast" ip="224.2.1.102" port="2347" isLoopback="true"/>
+    <Sender id="102" protocol="UDP" type="Unicast" ip="224.2.1.103" port="2348"/>
+</Senders>
+<Mapping>
+    <Map inputInterface="127.0.0.1" outputInterface="51.4.67.66">
+        <MappedReceiver id="1">
+            <MappedSender id="101"/>
+            <MappedSender id="102"/>
+        </MappedReceiver>
+        <MappedReceiver id="2">
+            <MappedSender id="101"/>
+        </MappedReceiver>
+    </Map>
+</Mapping>
