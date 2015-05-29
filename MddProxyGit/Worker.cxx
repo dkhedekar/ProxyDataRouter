@@ -7,6 +7,7 @@
 
 #include "Worker.hxx"
 #include "WorkDispatcher.hxx"
+#include "MddProxyRunLogger.hxx"
 
 namespace mdm {
 namespace mddproxy {
@@ -23,6 +24,7 @@ Worker::Worker(size_t slotId, WorkDispatcher* dispatcher):
 
 Worker::~Worker()
 {
+	LOG("Deleting worker %ld", thread);
 	delete myControlSlot;
 }
 

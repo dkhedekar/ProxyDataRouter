@@ -7,6 +7,7 @@
 
 #include "SenderSocket.hxx"
 #include "MddProxyException.hxx"
+#include "MddProxyRunLogger.hxx"
 #include <string.h>
 #include <errno.h>
 #include <boost/foreach.hpp>
@@ -111,6 +112,12 @@ AddrT* SenderSocket::Create()
 
 	socklen_t optlen = sizeof(size_t);
 	getsockopt(socketObj->socket, SOL_SOCKET, SO_SNDBUF, &socketBufferSize, &optlen);
+
+	LOG("created sender: <%s:%u> %s (inet addr:%s)",
+					(const char*) inet_ntoa(socketObj->addr.sin_addr),
+					(unsigned) ntohs(socketObj->addr.sin_port),
+					(const char*) socketObj->interfaceName,
+					(const char*) inet_ntoa(socketObj->interface.sin_addr));
 
 	return socketObj;
 }

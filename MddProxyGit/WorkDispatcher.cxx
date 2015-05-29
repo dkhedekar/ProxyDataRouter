@@ -7,6 +7,7 @@
 
 #include "WorkDispatcher.hxx"
 #include "MddProxyException.hxx"
+#include "MddProxyRunLogger.hxx"
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/foreach.hpp>
@@ -29,19 +30,15 @@ WorkDispatcher::~WorkDispatcher() {
 
 	pendingItems->Clear();
 	delete pendingItems;
+
 }
 
 int WorkDispatcher::AddWorkers(size_t count)
 {
 	for (size_t i=0; i < count; i++)
 	{
-		size_t slotId = totalWorkerCount;
-
-		Worker* newWorker = new Worker(slotId, this);
-		newWorker->Create();
+		Worker* newWorker = CreateNewWorker();
 		freeWorkers->push_back(newWorker);
-		workers.push_back(newWorker);
-		totalWorkerCount++;
 	}
 
 	return count;
@@ -50,7 +47,9 @@ int WorkDispatcher::AddWorkers(size_t count)
 Worker* WorkDispatcher::CreateNewWorker()
 {
 	Worker* newWorker = new Worker(totalWorkerCount, this);
-	newWorker->Create();
+	pthread_t* thId = newWorker->Create();
+
+	LOG("Created new worker id %ld", thId);
 	workers.push_back(newWorker);
 
 	totalWorkerCount++;
@@ -126,6 +125,7 @@ void WorkDispatcher::JoinThreads()
 	BOOST_FOREACH(Worker *worker, workers)
 	{
 		pthread_join(*worker->GetThreadId(), NULL);
+		delete worker;
 	}
 }
 

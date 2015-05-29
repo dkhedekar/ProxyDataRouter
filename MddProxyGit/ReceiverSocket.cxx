@@ -7,6 +7,7 @@
 
 #include "ReceiverSocket.hxx"
 #include "MddProxyException.hxx"
+#include "MddProxyRunLogger.hxx"
 #include <boost/foreach.hpp>
 #include <ifaddrs.h>
 #include <net/if.h>
@@ -93,7 +94,7 @@ AddrT* ReceiverSocket::Create()
 
 		if (!intfUp)
 		{
-			THROW("[MULTICASTLIB] <%s:%u>, the receiver interface %s (inet addr:%s) is down",
+			THROW("<%s:%u>, the receiver interface %s (inet addr:%s) is down",
 				(const char*) inet_ntoa(socketObj->addr.sin_addr),
 				(unsigned) ntohs(socketObj->addr.sin_port),
 				(const char*) socketObj->interfaceName,
@@ -139,6 +140,12 @@ AddrT* ReceiverSocket::Create()
 							sizeof(option) );
 	THROW_IF(retCode < 0, "Can't set SO_NO_CHECK %s err: %s", (const char*) inet_ntoa(socketObj->addr.sin_addr),
 				 strerror_r(errno, errBuffer, ERROR_BUFF_SIZE));
+
+	LOG("created receiver: <%s:%u> %s (inet addr:%s)",
+					(const char*) inet_ntoa(socketObj->addr.sin_addr),
+					(unsigned) ntohs(socketObj->addr.sin_port),
+					(const char*) socketObj->interfaceName,
+					(const char*) inet_ntoa(socketObj->interface.sin_addr));
 
 	return socketObj;
 }

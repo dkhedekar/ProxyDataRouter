@@ -10,11 +10,12 @@
 namespace mdm {
 namespace mddproxy {
 
-LogFile::LogFile(std::string& path) {
+LogFile::LogFile(std::string& path)
+{
 	log = new std::ofstream( path.c_str(),
 					std::ofstream::out|std::ofstream::ate|std::ofstream::app );
 
-	pthread_mutex_init(&lock,NULL);
+	lock =  PTHREAD_MUTEX_INITIALIZER;
 }
 
 LogFile::~LogFile()

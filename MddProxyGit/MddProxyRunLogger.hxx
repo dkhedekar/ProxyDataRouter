@@ -10,8 +10,10 @@
 
 #include <string>
 #include "LogFile.hxx"
+#include "CommonDefinitions.hxx"
 
 const long MAX_LOG_SIZE = 2048;
+
 
 namespace mdm {
 namespace mddproxy {
@@ -43,6 +45,16 @@ private:
 	bool Open(bool truncate = false);
 };
 
+extern Logger* LoggerInstance;
+
+#define LOG( exceptionStr, ... )\
+{\
+    LoggerInstance->Log( __LINE__,\
+					__FILE__,\
+					__func__,\
+					exceptionStr,\
+					##__VA_ARGS__ );\
+}
 
 } /* namespace mddproxy */
 } /* namespace mdm */

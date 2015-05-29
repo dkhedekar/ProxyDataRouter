@@ -14,11 +14,10 @@
 namespace mdm {
 namespace mddproxy {
 
-Logger* Instance;
-
+Logger* LoggerInstance;
 void CreateLoggerInstance(std::string& logFileDir, std::string& fileName)
 {
-	Instance = new Logger(logFileDir, fileName);
+	LoggerInstance = new Logger(logFileDir, fileName);
 }
 
 MddProxy::MddProxy(const std::string& configFileName, const ConfigFileFormatT& configFormat, std::string& logFileDir, std::string& logLevel)

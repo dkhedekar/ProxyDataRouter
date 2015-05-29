@@ -14,7 +14,7 @@
 namespace mdm {
 namespace mddproxy {
 
-extern Logger* Instance;
+extern Logger* LoggerInstance;
 
 MddProxyException::MddProxyException(int line,
 		const char *file,
@@ -29,7 +29,7 @@ MddProxyException::MddProxyException(int line,
 
 	va_end( pa );
 
-	Instance->LogException(line,file,func, formattedMsg);
+	LoggerInstance->LogException(line,file,func, formattedMsg);
 
 }
 

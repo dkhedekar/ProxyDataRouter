@@ -7,6 +7,7 @@
 
 #include "MddProxyRunLogger.hxx"
 #include <cstdarg>
+#include <string.h>
 
 namespace mdm {
 namespace mddproxy {
@@ -16,6 +17,7 @@ Logger::Logger(std::string& filePath, std::string& filename):
 			logFile(absolutepath)
 {
 	logString = new char[MAX_LOG_SIZE];
+
 }
 
 Logger::~Logger()
@@ -40,18 +42,23 @@ void Logger::Log(int line,
 		...)
 {
 	//const char* str = const_cast<char*>(logString);
-	char* str = new char[2048];
-	sprintf( logString, "%d\t%s\t%s", line, file, func);
-	logFile.getLogger()->write(str, 256);
+	sprintf( logString, "%d\t%s\t%s\t", line, file, func);
+	std::ofstream* writer = logFile.getLogger();
+	int hdrsz = strlen(logString);
 
+	writer->write(logString, hdrsz);
 	va_list pa;
 
 	va_start( pa, errorStr );
-	vsnprintf(logString, MAX_LOG_SIZE-250, errorStr, pa );
+	vsnprintf(logString, MAX_LOG_SIZE-hdrsz, errorStr, pa );
 	perror(logString);
 	va_end( pa );
 
-	logFile.getLogger()->write(str, MAX_LOG_SIZE-250);
+	writer->write(logString, strlen(logString));
+	writer->write("\n",1);
+	logFile.leave();
+
+	writer->flush();
 }
 
 void Logger::LogException(int line,
@@ -60,7 +67,8 @@ void Logger::LogException(int line,
 		const char *errorStr)
 {
 	sprintf( logString, "%d\t%s\t%s\t%s", line, file, func,errorStr );
-	logFile.getLogger()->write(logString, MAX_LOG_SIZE);
+	logFile.getLogger()->write(logString, strlen(logString));
+	logFile.leave();
 }
 } /* namespace mddproxy */
 } /* namespace mdm */

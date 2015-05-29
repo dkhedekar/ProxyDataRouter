@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include "Socket.hxx"
 #include "MddProxyException.hxx"
+#include "CommonDefinitions.hxx"
 
 namespace mdm {
 namespace mddproxy {
@@ -52,6 +53,7 @@ public:
 		int retCode = pthread_create(thread, NULL, &Worker::RunHelper, (void*)this);
 		if (retCode != 0 )
 			THROW("Can't create thread");
+
 		return thread;
 	}
 
