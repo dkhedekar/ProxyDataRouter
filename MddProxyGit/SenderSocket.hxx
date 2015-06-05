@@ -29,7 +29,7 @@ public:
 
 private:
 	bool isLoopBackEnabled;
-	char errBuffer[ERROR_BUFF_SIZE];
+
 };
 
 } /* namespace mddproxy */

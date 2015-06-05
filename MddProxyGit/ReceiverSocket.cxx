@@ -121,21 +121,25 @@ AddrT* ReceiverSocket::Create()
 	socklen_t optlen = sizeof(size_t);
 	getsockopt(socketObj->socket, SOL_SOCKET, SO_RCVBUF, &socketBufferSize, &optlen);
 
-	struct ip_mreq imreq;
+	if (socketObj->type == Multicast)
+	{
+		struct ip_mreq imreq;
 
-	imreq.imr_multiaddr.s_addr = socketObj->addr.sin_addr.s_addr;
-	imreq.imr_interface.s_addr = socketObj->interface.sin_addr.s_addr;
+		imreq.imr_multiaddr.s_addr = socketObj->addr.sin_addr.s_addr;
+		imreq.imr_interface.s_addr = socketObj->interface.sin_addr.s_addr;
 
-	// JOIN multicast group on default interface
-	retCode = setsockopt(socketObj->socket, IPPROTO_IP, IP_ADD_MEMBERSHIP,(const void *)&imreq, sizeof(struct ip_mreq));
-	THROW_IF(retCode < 0, "Can't Add membership to interface %s err: %s", (const char*) inet_ntoa(socketObj->addr.sin_addr),
-			 strerror_r(errno, errBuffer, ERROR_BUFF_SIZE));
+		// JOIN multicast group on default interface
+		retCode = setsockopt(socketObj->socket, IPPROTO_IP, IP_ADD_MEMBERSHIP,(const void *)&imreq, sizeof(struct ip_mreq));
+		THROW_IF(retCode < 0, "Can't Add membership to interface %s err: %s", (const char*) inet_ntoa(socketObj->addr.sin_addr),
+				 strerror_r(errno, errBuffer, ERROR_BUFF_SIZE));
 
+		LOG("Added Multicast membership to interface %s", (const char*) inet_ntoa(socketObj->addr.sin_addr));
+	}
 
-	// Disable UDP Checksun
-	retCode = setsockopt( socketObj->socket,        // socket
-							SOL_SOCKET,                    // level
-							SO_NO_CHECK,               // option is Multicast
+	// Disable UDP checksum
+	retCode = setsockopt( socketObj->socket,
+							SOL_SOCKET,
+							SO_NO_CHECK,
 							(void*)&option,
 							sizeof(option) );
 	THROW_IF(retCode < 0, "Can't set SO_NO_CHECK %s err: %s", (const char*) inet_ntoa(socketObj->addr.sin_addr),

@@ -68,7 +68,7 @@ AddrT* SenderSocket::Create()
 
 	if (!intfUp)
 	{
-		THROW("[MULTICASTLIB] <%s:%u>, the receiver interface %s (inet addr:%s) is down",
+		THROW("<%s:%u>, the receiver interface %s (inet addr:%s) is down",
 			(const char*) inet_ntoa(socketObj->addr.sin_addr),
 			(unsigned) ntohs(socketObj->addr.sin_port),
 			(const char*) socketObj->interfaceName,

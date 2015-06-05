@@ -42,6 +42,9 @@ public:
 protected:
 	AddrT* socketObj;
 	size_t socketBufferSize;
+
+
+	char errBuffer[ERROR_BUFF_SIZE];
 };
 
 } /* namespace mddproxy */
