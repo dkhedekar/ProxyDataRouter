@@ -24,7 +24,7 @@ Worker::Worker(size_t slotId, WorkDispatcher* dispatcher):
 
 Worker::~Worker()
 {
-	LOG("Deleting worker %ld", thread);
+	LOGINF("Deleting worker %ld", thread);
 	delete myControlSlot;
 }
 

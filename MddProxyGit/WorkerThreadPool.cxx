@@ -11,12 +11,10 @@ namespace mdm {
 namespace mdapp {
 
 WorkerThreadPool::WorkerThreadPool() {
-	// TODO Auto-generated constructor stub
 
 }
 
 WorkerThreadPool::~WorkerThreadPool() {
-	// TODO Auto-generated destructor stub
 }
 
 } /* namespace mdapp */

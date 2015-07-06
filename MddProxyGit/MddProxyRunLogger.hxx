@@ -14,6 +14,11 @@
 
 const long MAX_LOG_SIZE = 2048;
 
+typedef enum
+{
+	INFORMATIONAL=0,
+	DEBUG=1
+}LogLevelT;
 
 namespace mdm {
 namespace mddproxy {
@@ -37,19 +42,35 @@ public:
 			const char *func,
 			const char *errorStr);
 
+	void SetLogLevel(LogLevelT);
+
+	LogLevelT GetLogLevel() { return logLevel; }
+	bool IsDebug() { return logLevel == DEBUG; }
+
 private:
 	std::string absolutepath;
 	LogFile logFile;
 	char* logString;
+	LogLevelT logLevel;
 
 	bool Open(bool truncate = false);
 };
 
 extern Logger* LoggerInstance;
 
-#define LOG( exceptionStr, ... )\
+#define LOGINF( exceptionStr, ... )\
 {\
     LoggerInstance->Log( __LINE__,\
+					__FILE__,\
+					__func__,\
+					exceptionStr,\
+					##__VA_ARGS__ );\
+}
+
+#define LOGDEB( exceptionStr, ... )\
+{\
+	if (LoggerInstance->IsDebug())\
+    	LoggerInstance->Log( __LINE__,\
 					__FILE__,\
 					__func__,\
 					exceptionStr,\

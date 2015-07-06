@@ -53,6 +53,10 @@ MddProxy::~MddProxy()
 	delete senders;
 
 }
+void MddProxy::SetLogLevel(LogLevelT newLogLevel)
+{
+	LoggerInstance->SetLogLevel(newLogLevel);
+}
 
 void MddProxy::FillAddr(AddrT* addr,MulticastGroupT& multicastGroup)
 {

@@ -6,11 +6,13 @@
 
 #include "MarketDataFeedConfigReader.hxx"
 #include "MddProxy.hxx"
+#include "CommandLineInterface.hxx"
 
 static struct option longOptions[] = {
             {"config", required_argument, 0, 'c'},
             {"logdir", required_argument, 0, 'd'},
-            {"loglevel", required_argument, 0, 'l' }
+            {"loglevel", required_argument, 0, 'l' },
+            {"mgmtport", optional_argument, 0, 'm' }
         };
 
 using namespace mdm::mddproxy;
@@ -40,6 +42,8 @@ int main(int argc, char *argv[])
     std::string logFileDir = "/tmp/";
     std::string logLevel = "info";
 
+    int mgmtport = 6800;
+
     while (1)
     {
 
@@ -65,6 +69,10 @@ int main(int argc, char *argv[])
 				std::cout << "Working with log level " << logLevel << std::endl;
 				break;
 
+			case 'm':
+				mgmtport = atoi(optarg);
+				std::cout << "Service mgmt through port " << mgmtport << std::endl;
+				break;
 			default: /* '?' */
 				fprintf(stderr, "Usage: %s [-d <log file dir>] -c <config file name> " \
 						"[-l <log level=debug|info>] \n",
@@ -102,6 +110,11 @@ int main(int argc, char *argv[])
 	signal(SIGABRT, CheckForSignals);
 
     mddPrxy = new MddProxy(configFileName, configFormat, logFileDir, logLevel);
+    AddrT* mgmtAddr = new AddrT;
+    mgmtAddr->interface.sin_port = mgmtport;
+    CommandLineInterface* commandLineProc = new CommandLineInterface(mgmtAddr, mddPrxy);
+    commandLineProc->Create();
+    commandLineProc->Listen();
 
     mddPrxy->WaitForExit();
 }

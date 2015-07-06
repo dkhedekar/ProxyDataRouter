@@ -133,7 +133,7 @@ AddrT* ReceiverSocket::Create()
 		THROW_IF(retCode < 0, "Can't Add membership to interface %s err: %s", (const char*) inet_ntoa(socketObj->addr.sin_addr),
 				 strerror_r(errno, errBuffer, ERROR_BUFF_SIZE));
 
-		LOG("Added Multicast membership to interface %s", (const char*) inet_ntoa(socketObj->addr.sin_addr));
+		LOGINF("Added Multicast membership to interface %s", (const char*) inet_ntoa(socketObj->addr.sin_addr));
 	}
 
 	// Disable UDP checksum
@@ -145,7 +145,7 @@ AddrT* ReceiverSocket::Create()
 	THROW_IF(retCode < 0, "Can't set SO_NO_CHECK %s err: %s", (const char*) inet_ntoa(socketObj->addr.sin_addr),
 				 strerror_r(errno, errBuffer, ERROR_BUFF_SIZE));
 
-	LOG("created receiver: <%s:%u> %s (inet addr:%s)",
+	LOGINF("created receiver: <%s:%u> %s (inet addr:%s)",
 					(const char*) inet_ntoa(socketObj->addr.sin_addr),
 					(unsigned) ntohs(socketObj->addr.sin_port),
 					(const char*) socketObj->interfaceName,

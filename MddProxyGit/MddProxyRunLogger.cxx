@@ -14,7 +14,8 @@ namespace mddproxy {
 
 Logger::Logger(std::string& filePath, std::string& filename):
 		absolutepath(filePath + filename),
-			logFile(absolutepath)
+			logFile(absolutepath),
+			logLevel(INFORMATIONAL)
 {
 	logString = new char[MAX_LOG_SIZE];
 
@@ -33,6 +34,11 @@ void Logger::TruncateLog()
 bool Logger::Open(bool truncate)
 {
 	return false;
+}
+
+void Logger::SetLogLevel(LogLevelT newLogLevel)
+{
+	logLevel = newLogLevel;
 }
 
 void Logger::Log(int line,

@@ -13,7 +13,7 @@
 #include "MarketDataFeedConfigReader.hxx"
 #include "WorkDispatcher.hxx"
 #include "Epoller.hxx"
-
+#include "MddProxyRunLogger.hxx"
 
 namespace mdm {
 namespace mddproxy {
@@ -24,6 +24,7 @@ public:
 	virtual ~MddProxy();
 
 	void WaitForExit();
+	void SetLogLevel(LogLevelT);
 
 	void Stop()
 	{

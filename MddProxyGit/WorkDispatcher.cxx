@@ -49,7 +49,7 @@ Worker* WorkDispatcher::CreateNewWorker()
 	Worker* newWorker = new Worker(totalWorkerCount, this);
 	pthread_t* thId = newWorker->Create();
 
-	LOG("Created new worker id %ld", thId);
+	LOGINF("Created new worker id %ld", thId);
 	workers.push_back(newWorker);
 
 	totalWorkerCount++;
