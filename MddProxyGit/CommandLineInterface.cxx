@@ -20,6 +20,7 @@
 #include <string.h>
 #include <iostream>
 #include <getopt.h>
+#include <exception>
 
 static struct option commands[] = {
             {"sendbuff", required_argument, 0, 's'},
@@ -105,43 +106,56 @@ void CommandLineInterface::ReceiveData()
 	int option_index = 0;
 	bool shouldExit = false;
 
-	while (1)
+	try
 	{
-		int c = getopt_long (1, buff, "dc:l",
-				commands, &option_index);
-
-		if (c == -1) break;
-
-		switch (c)
+		while (1)
 		{
-			case 's':
-				break;
+			int c = getopt_long (1, buff, "dc:l",
+					commands, &option_index);
 
-			case 'r':
-				break;
+			if (c == -1) break;
 
-			case 'e':
-				proxy->Stop();
-				retCode = 0;
-				shouldExit = true;
-				break;
-			case 'l':
+			switch (c)
 			{
-				LogLevelT newLogLevel = INFORMATIONAL;
-				if (strcmp(optarg, "DEBUG")==0 )
+				case 's':
 				{
-					newLogLevel = DEBUG;
+					size_t buffersize = atoi(optarg);
+					proxy->SetSendBufferSize(buffersize);
+					break;
 				}
-				proxy->SetLogLevel(newLogLevel);
+				case 'r':
+				{
+					size_t buffersize = atoi(optarg);
+					proxy->SetRecvBufferSize(buffersize);
+					break;
+				}
+				case 'e':
+					proxy->Stop();
+					retCode = 0;
+					shouldExit = true;
+					break;
+				case 'l':
+				{
+					LogLevelT newLogLevel = INFORMATIONAL;
+					if (strcmp(optarg, "DEBUG")==0 )
+					{
+						newLogLevel = DEBUG;
+					}
+					proxy->SetLogLevel(newLogLevel);
+				}
+					break;
+
+				default:
+					retCode = -1;
+					break;
 			}
-				break;
-
-			default:
-				retCode = -1;
-				break;
-		}
-	} // while
-
+		} // while
+	}
+	catch(std::exception& ex)
+	{
+		retCode = -1;
+		LOGINF("Exception caught in processing command %s", ex.what());
+	}
 	memset(&buff[0], ' ', sizeof(buff[0]));
 	strcpy(buff[0],(retCode == 0)? "success": "error");
 	SendData(buff[0],strlen(buff[0]));

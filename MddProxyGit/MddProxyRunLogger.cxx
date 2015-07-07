@@ -42,13 +42,14 @@ void Logger::SetLogLevel(LogLevelT newLogLevel)
 }
 
 void Logger::Log(int line,
+		LogLevelT logLevel,
 		const char *file,
 		const char *func,
 		const char *errorStr,
 		...)
 {
-	//const char* str = const_cast<char*>(logString);
-	sprintf( logString, "%d\t%s\t%s\t", line, file, func);
+	std::string logLevelString = logLevel == INFORMATIONAL ? "INFO" : "DEBUG";
+	sprintf( logString, "%d\t%s\t%s\t%s\t", line, file, func, logLevelString.c_str());
 	std::ofstream* writer = logFile.getLogger();
 	int hdrsz = strlen(logString);
 

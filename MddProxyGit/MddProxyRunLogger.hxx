@@ -32,6 +32,7 @@ public:
 	void TruncateLog();
 
 	void Log(int line,
+			LogLevelT logLevel,
 			const char *file,
 			const char *func,
 			const char *errorStr,
@@ -58,22 +59,24 @@ private:
 
 extern Logger* LoggerInstance;
 
-#define LOGINF( exceptionStr, ... )\
+#define LOGINF( str, ... )\
 {\
     LoggerInstance->Log( __LINE__,\
+    				INFORMATIONAL,\
 					__FILE__,\
 					__func__,\
-					exceptionStr,\
+					str,\
 					##__VA_ARGS__ );\
 }
 
-#define LOGDEB( exceptionStr, ... )\
+#define LOGDEB( str, ... )\
 {\
 	if (LoggerInstance->IsDebug())\
     	LoggerInstance->Log( __LINE__,\
+    				DEBUG,\
 					__FILE__,\
 					__func__,\
-					exceptionStr,\
+					str,\
 					##__VA_ARGS__ );\
 }
 

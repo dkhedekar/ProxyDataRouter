@@ -25,6 +25,8 @@ public:
 
 	void WaitForExit();
 	void SetLogLevel(LogLevelT);
+	void SetSendBufferSize(size_t);
+	void SetRecvBufferSize(size_t);
 
 	void Stop()
 	{

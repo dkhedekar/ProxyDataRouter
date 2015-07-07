@@ -58,6 +58,28 @@ void MddProxy::SetLogLevel(LogLevelT newLogLevel)
 	LoggerInstance->SetLogLevel(newLogLevel);
 }
 
+void MddProxy::SetSendBufferSize(size_t newBufferSize)
+{
+	WorkItemsItT first = senders->begin();
+	WorkItemsItT last = senders->end();
+
+	for(;first!=last; first++)
+	{
+		first->second->SetBufferSize(newBufferSize);
+	}
+}
+void MddProxy::SetRecvBufferSize(size_t newBufferSize)
+{
+	WorkItemsItT first = receivers->begin();
+	WorkItemsItT last = receivers->end();
+
+	for(;first!=last; first++)
+	{
+		first->second->SetBufferSize(newBufferSize);
+	}
+}
+
+
 void MddProxy::FillAddr(AddrT* addr,MulticastGroupT& multicastGroup)
 {
 	inet_aton(multicastGroup.address.c_str(),&addr->addr.sin_addr);

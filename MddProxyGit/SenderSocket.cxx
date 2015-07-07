@@ -131,6 +131,13 @@ void SenderSocket::SetBufferSize(size_t newBufferSize)
 
 		Socket::SetBufferSize(newBufferSize);
 	}
+
+	LOGINF("set send buffer size to (%d): <%s:%u> %s (inet addr:%s)",
+					newBufferSize,
+					(const char*) inet_ntoa(socketObj->addr.sin_addr),
+					(unsigned) ntohs(socketObj->addr.sin_port),
+					(const char*) socketObj->interfaceName,
+					(const char*) inet_ntoa(socketObj->interface.sin_addr));
 }
 
 } /* namespace mddproxy */

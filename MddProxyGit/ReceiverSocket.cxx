@@ -27,17 +27,19 @@ ReceiverSocket::ReceiverSocket(std::list<Socket*>* senderList, AddrT* addr): Soc
 
 ReceiverSocket::~ReceiverSocket()
 {
-	// JOIN multicast group on default interface
-	struct ip_mreq imreq;
+	if (socketObj->type == Multicast)
+	{
+		struct ip_mreq imreq;
 
-	imreq.imr_multiaddr.s_addr = socketObj->addr.sin_addr.s_addr;
-	imreq.imr_interface.s_addr = socketObj->interface.sin_addr.s_addr;
+		imreq.imr_multiaddr.s_addr = socketObj->addr.sin_addr.s_addr;
+		imreq.imr_interface.s_addr = socketObj->interface.sin_addr.s_addr;
 
-	int retCode = setsockopt(socketObj->socket, IPPROTO_IP, IP_DROP_MEMBERSHIP,(const void *)&imreq, sizeof(struct ip_mreq));
-	THROW_IF(retCode < 0, "Can't drop membership to interface %s err: %s", (const char*) inet_ntoa(socketObj->addr.sin_addr),
-			 strerror_r(errno, errBuffer, ERROR_BUFF_SIZE));
-
+		int retCode = setsockopt(socketObj->socket, IPPROTO_IP, IP_DROP_MEMBERSHIP,(const void *)&imreq, sizeof(struct ip_mreq));
+		THROW_IF(retCode < 0, "Can't drop membership to interface %s err: %s", (const char*) inet_ntoa(socketObj->addr.sin_addr),
+				 strerror_r(errno, errBuffer, ERROR_BUFF_SIZE));
+	}
 	delete buff;
+
 }
 
 void ReceiverSocket::SetSenderList(std::list<Socket*>* senderList)
@@ -53,7 +55,12 @@ void ReceiverSocket::ReceiveData()
 	do
 	{
 		count = recvfrom(socketObj->socket, buff, MAX_PACKET_SIZE,0, (struct sockaddr *)&srcAddress, &sockLen);
-		//count = read(socketObj->socket, buff, MAX_PACKET_SIZE);
+
+		LOGDEB("<%s:%u>, rcvd bytes (%d)",
+						(const char*) inet_ntoa(socketObj->addr.sin_addr),
+						(unsigned) ntohs(socketObj->addr.sin_port),
+						count);
+
 		if ( count > 0 && count <= MAX_PACKET_SIZE)
 			BOOST_FOREACH(SenderListT::value_type sender,*senderSocketList)
 			{
@@ -162,6 +169,14 @@ void ReceiverSocket::SetBufferSize(size_t newBufferSize)
 
 		Socket::SetBufferSize(newBufferSize);
 	}
+
+	LOGINF("set receive buffer size (%d): <%s:%u> %s (inet addr:%s)",
+					newBufferSize,
+					(const char*) inet_ntoa(socketObj->addr.sin_addr),
+					(unsigned) ntohs(socketObj->addr.sin_port),
+					(const char*) socketObj->interfaceName,
+					(const char*) inet_ntoa(socketObj->interface.sin_addr));
+
 }
 } /* namespace mddproxy */
 } /* namespace mdm */
