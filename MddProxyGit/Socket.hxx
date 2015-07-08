@@ -10,6 +10,7 @@
 
 #include <netinet/in.h>
 #include "CommonDefinitions.hxx"
+#include "StatsCollector.hxx"
 
 #define MAX_INTF_NAME 10
 #define ERROR_BUFF_SIZE 1024
@@ -42,6 +43,8 @@ public:
 protected:
 	AddrT* socketObj;
 	size_t socketBufferSize;
+
+	StatsCollector statsCollector;
 
 
 	char errBuffer[ERROR_BUFF_SIZE];

@@ -6,8 +6,11 @@
  */
 
 #include "MddProxyRunLogger.hxx"
+#include "CommonFunctions.hxx"
+
 #include <cstdarg>
 #include <string.h>
+
 
 namespace mdm {
 namespace mddproxy {
@@ -49,7 +52,10 @@ void Logger::Log(int line,
 		...)
 {
 	std::string logLevelString = logLevel == INFORMATIONAL ? "INFO" : "DEBUG";
-	sprintf( logString, "%d\t%s\t%s\t%s\t", line, file, func, logLevelString.c_str());
+	timeval currTime = CommonFunctions::GetTime();
+	sprintf( logString, "%ld\t%d\t%s\t%s\t%s\t",
+			currTime.tv_sec * 1000000 + currTime.tv_usec,
+			line, file, func, logLevelString.c_str());
 	std::ofstream* writer = logFile.getLogger();
 	int hdrsz = strlen(logString);
 
@@ -73,7 +79,10 @@ void Logger::LogException(int line,
 		const char *func,
 		const char *errorStr)
 {
-	sprintf( logString, "%d\t%s\t%s\t%s", line, file, func,errorStr );
+	timeval currTime = CommonFunctions::GetTime();
+	sprintf( logString, "%ld\t%d\t%s\t%s\t%s",
+			currTime.tv_sec * 1000000 + currTime.tv_usec,
+			line, file, func,errorStr );
 	logFile.getLogger()->write(logString, strlen(logString));
 	logFile.leave();
 }

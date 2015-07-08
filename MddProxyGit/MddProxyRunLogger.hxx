@@ -9,6 +9,7 @@
 #define MDDPROXYRUNLOGGER_HXX_
 
 #include <string>
+
 #include "LogFile.hxx"
 #include "CommonDefinitions.hxx"
 

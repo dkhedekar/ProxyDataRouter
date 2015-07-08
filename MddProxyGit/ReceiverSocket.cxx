@@ -61,11 +61,12 @@ void ReceiverSocket::ReceiveData()
 						(unsigned) ntohs(socketObj->addr.sin_port),
 						count);
 
+		statsCollector.ReportBytes(count);
 		if ( count > 0 && count <= MAX_PACKET_SIZE)
 			BOOST_FOREACH(SenderListT::value_type sender,*senderSocketList)
 			{
 				sender->SendData(buff, count);
-			}
+		}
 		else
 			break;
 	} while(count > 0);

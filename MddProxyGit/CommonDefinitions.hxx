@@ -17,11 +17,7 @@ typedef enum
 	Unicast = 0,
 	Multicast = 1
 }BroadcastT;
-
-
 }
 }
-
-
 
 #endif /* COMMONDEFINITIONS_HXX_ */
