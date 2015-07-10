@@ -9,12 +9,16 @@
 #include "MddProxyRunLogger.hxx"
 #include "CommonFunctions.hxx"
 
+#include <string.h>
+
 namespace mdm {
 namespace mddproxy {
 
-StatsCollector::StatsCollector()
+StatsCollector::StatsCollector(const char* socketAddr, int socketPort)
 {
 	intvlBytesTrns = totalBytesTrns = 0 ;
+	addr.assign(socketAddr);
+	port = socketPort;
 }
 
 StatsCollector::~StatsCollector()
@@ -36,7 +40,7 @@ void StatsCollector::ReportBytes(size_t transferedBytes)
 	intvlBytesTrns += transferedBytes;
 }
 
-StatsRateT StatsCollector::GetStatsInPrevPeriod()
+const StatsRateT StatsCollector::GetStatsInPrevPeriod()
 {
 	StatsRateT stats;
 

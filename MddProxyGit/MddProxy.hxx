@@ -14,6 +14,7 @@
 #include "WorkDispatcher.hxx"
 #include "Epoller.hxx"
 #include "MddProxyRunLogger.hxx"
+#include "StatsWriter.hxx"
 
 namespace mdm {
 namespace mddproxy {
@@ -32,8 +33,14 @@ public:
 	{
 		continueProcessing = false;
 	}
+
+	void StartStats(size_t frequency);
+	void StopStats();
+
 private:
 	MddFeedConfig configReader;
+	StatsWriter* statsWriter;
+
 	WorkDispatcher* workDispatcher;
 	mdm::mddproxy::WorkItemsT* receivers;
 	mdm::mddproxy::WorkItemsT* senders;
@@ -43,6 +50,7 @@ private:
 	void FillAddr(AddrT* addr,MulticastGroupT& multicastGroup);
 
 	Epoller epoller;
+
 
 };
 

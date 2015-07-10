@@ -25,8 +25,10 @@
 static struct option commands[] = {
             {"sendbuff", required_argument, 0, 's'},
             {"recvbuff", required_argument, 0, 'r'},
-            {"stop", required_argument, 0, 'e' },
-            {"loglevel", required_argument,0,'l'}
+            {"stop", no_argument, 0, 'e' },
+            {"loglevel", required_argument,0,'l'},
+            {"start-stats", optional_argument,0,'t'},
+            {"stop-stats", no_argument,0,'n'}
         };
 
 
@@ -144,7 +146,16 @@ void CommandLineInterface::ReceiveData()
 					proxy->SetLogLevel(newLogLevel);
 				}
 					break;
-
+				case 't':
+				{
+					proxy->StartStats(atoi(optarg));
+				}
+					break;
+				case 'n':
+				{
+					proxy->StopStats();
+				}
+					break;
 				default:
 					retCode = -1;
 					break;

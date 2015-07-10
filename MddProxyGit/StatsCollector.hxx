@@ -11,7 +11,9 @@
 #include <stdint.h>
 #include <time.h>
 #include <sys/time.h>
+#include <string>
 
+const size_t MAX_REPORTED_ADDR_SIZE=20;
 
 namespace mdm {
 namespace mddproxy {
@@ -23,14 +25,14 @@ typedef struct
 } StatsRateT;
 
 class StatsCollector {
+
+	friend class StatsWriter;
 public:
-	StatsCollector();
+
+	StatsCollector(const char* socketAddr, int socketPort);
 	virtual ~StatsCollector();
-
-	StatsRateT GetStatsInPrevPeriod();
-
+	const StatsRateT GetStatsInPrevPeriod();
 	void ReportBytes(size_t );
-
 	void Start();
 	void Stop();
 
@@ -40,6 +42,9 @@ private:
 	timeval intvlStart;
 	uint64_t totalBytesTrns;
 	timeval prevReportingTimestamp;
+
+	std::string addr;
+	int port;
 };
 
 } /* namespace mddproxy */

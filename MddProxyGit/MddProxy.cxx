@@ -27,9 +27,11 @@ MddProxy::MddProxy(const std::string& configFileName, const ConfigFileFormatT& c
 	CreateLoggerInstance(logFileDir, fileName);
 	receivers = new WorkItemsT;
 	senders = new WorkItemsT;
+	statsWriter = new StatsWriter;
 	AddReceiversFromConfig(configReader.GetMappedFeeds());
 	workDispatcher = new WorkDispatcher(receivers);
 	continueProcessing = true;
+
 }
 
 MddProxy::~MddProxy()
@@ -53,6 +55,18 @@ MddProxy::~MddProxy()
 	delete senders;
 
 }
+
+
+void MddProxy::StartStats(size_t frequency)
+{
+	statsWriter->Start(frequency);
+}
+
+void MddProxy::StopStats()
+{
+	statsWriter->Stop();
+}
+
 void MddProxy::SetLogLevel(LogLevelT newLogLevel)
 {
 	LoggerInstance->SetLogLevel(newLogLevel);
@@ -115,7 +129,9 @@ void MddProxy::AddReceiversFromConfig(MappedFeedListT* feedsList)
 				this->FillAddr(senderAddr, *output);
 
 				mdm::mddproxy::Socket* senderObj = new SenderSocket(senderAddr);
-				senderObj->Create();
+				AddrT* newSenderAddr = senderObj->Create();
+				StatsCollector* statsCollector = statsWriter->GetStatsCollector(newSenderAddr->socket, mappedFeed->outputInterface.c_str(), (int) newSenderAddr->addr.sin_port);
+				senderObj->SetStatsCollector(statsCollector);
 				senderList->push_back(senderObj);
 			}
 
@@ -135,6 +151,8 @@ void MddProxy::AddReceiversFromConfig(MappedFeedListT* feedsList)
 
 			ReceiverSocket* rcvrSocket = new ReceiverSocket(senderList, receiverAddr);
 			receiverAddr = rcvrSocket->Create();
+			StatsCollector* statsCollector = statsWriter->GetStatsCollector(receiverAddr->socket, mappedFeed->outputInterface.c_str(), (int) receiverAddr->addr.sin_port);
+			rcvrSocket->SetStatsCollector(statsCollector);
 			this->receivers->insert(std::make_pair(receiverAddr->socket,rcvrSocket));
 
 			epoller.RegisterSocket(receiverAddr->socket);

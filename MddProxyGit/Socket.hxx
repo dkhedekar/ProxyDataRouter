@@ -40,11 +40,14 @@ public:
 	virtual void SendData(void*,size_t) = 0;
 
 	virtual void SetBufferSize(size_t newBufferSize);
+
+	void SetStatsCollector(StatsCollector*);
+
 protected:
 	AddrT* socketObj;
 	size_t socketBufferSize;
 
-	StatsCollector statsCollector;
+	StatsCollector* statsCollector;
 
 
 	char errBuffer[ERROR_BUFF_SIZE];

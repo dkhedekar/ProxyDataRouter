@@ -11,7 +11,10 @@
 namespace mdm {
 namespace mddproxy {
 
-Socket::Socket(AddrT* addr): socketObj(addr), socketBufferSize(0)
+Socket::Socket(AddrT* addr):
+		socketObj(addr),
+		socketBufferSize(0),
+		statsCollector(NULL)
 {}
 
 Socket::~Socket()
@@ -25,6 +28,11 @@ void Socket::Close()
 void Socket::SetBufferSize(size_t newBufferSize)
 {
 	socketBufferSize = newBufferSize;
+}
+
+void Socket::SetStatsCollector(StatsCollector* stats)
+{
+	statsCollector = stats;
 }
 } /* namespace mddproxy */
 } /* namespace mdm */
