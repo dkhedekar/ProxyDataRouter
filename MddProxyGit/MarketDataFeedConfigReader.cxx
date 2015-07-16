@@ -39,15 +39,6 @@ void MddFeedConfig::Load(const std::string& filename, const ConfigFileFormatT& f
     	case XML:
     		pt::read_xml(filename, tree);
     		break;
-    	case INI:
-    		pt::read_ini(filename, tree);
-    		break;
-    	case JSON:
-        	pt::read_json(filename, tree);
-        	break;
-    	case INFO:
-        	pt::read_info(filename, tree);
-        	break;
     	default:
     		THROW("Unrecognizable Mdd feed Config file format. Allowed formats are xml/ini/info/json");
     		break;

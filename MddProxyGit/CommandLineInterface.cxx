@@ -17,26 +17,20 @@
 
 #include <unistd.h>
 #include <stdlib.h>
-#include <string.h>
+#include <string>
 #include <iostream>
 #include <getopt.h>
 #include <exception>
+#include <iostream>
 
-static struct option commands[] = {
-            {"sendbuff", required_argument, 0, 's'},
-            {"recvbuff", required_argument, 0, 'r'},
-            {"stop", no_argument, 0, 'e' },
-            {"loglevel", required_argument,0,'l'},
-            {"start-stats", optional_argument,0,'t'},
-            {"stop-stats", no_argument,0,'n'}
-        };
+#include <boost/foreach.hpp>
 
 
 namespace mdm {
 namespace mddproxy {
 
 CommandLineInterface::CommandLineInterface(AddrT* addr, MddProxy* mddproxy):
-		Socket(addr), proxy(mddproxy), clientSocket(0)
+		Socket(addr), proxy(mddproxy), clientSocket(0), stopCommandIntf(false)
 {
 
 }
@@ -95,89 +89,131 @@ void CommandLineInterface::Listen()
 					strerror_r(errno, errBuffer, ERROR_BUFF_SIZE));
 
 		ReceiveData();
-	} while(1);
-}
+	} while(!stopCommandIntf);
 
+	if (stopCommandIntf)
+		close(socketObj->socket);
+}
 void CommandLineInterface::ReceiveData()
 {
-	char* buff[1];
-	buff[0] = new char[256];
+	char* buff = new char[1024];
 
-	int retCode = read(clientSocket, buff[0], 256);
+	while(!stopCommandIntf)
+	{
+		try
+		{
+			int readcount = read(clientSocket, buff, sizeof(buff));
+			std::string response =	ProcessCommand(buff, readcount);
+			SendData(response.c_str(),response.length());
+		}
+		catch(std::exception& ex)
+		{
+			LOGINF("Exception caught in processing command %s", ex.what());
+			break;
+		}
+	}
+}
 
-	int option_index = 0;
-	bool shouldExit = false;
+void CommandLineInterface::SendData(const char* buff,size_t size)
+{
+	write(clientSocket,(char*)buff,size);
+}
+std::string CommandLineInterface::ProcessCommand(char* buffer, size_t inpBufferLen)
+{
+	pt::ptree tree;
 
+    membuf stbuf(buffer, buffer + inpBufferLen);
+    std::istream is(&stbuf);
+
+    int retCode = 0 ;
 	try
 	{
-		while (1)
+    	pt::read_json(is, tree);
+
+    	BOOST_FOREACH( ptree::value_type const&command, tree.get_child("commands") )
 		{
-			int c = getopt_long (1, buff, "dc:l",
-					commands, &option_index);
+    		std::string commandName = command.second.get<std::string>("<xmlattr>.name");
+    		uint8_t id = command.second.get<uint8_t>("<xmlattr>.id");
 
-			if (c == -1) break;
-
-			switch (c)
-			{
-				case 's':
-				{
-					size_t buffersize = atoi(optarg);
-					proxy->SetSendBufferSize(buffersize);
-					break;
-				}
-				case 'r':
-				{
-					size_t buffersize = atoi(optarg);
-					proxy->SetRecvBufferSize(buffersize);
-					break;
-				}
-				case 'e':
+    		switch(id)
+    		{
+    			case 1: // stopproc
 					proxy->Stop();
-					retCode = 0;
-					shouldExit = true;
+					stopCommandIntf = true;
 					break;
-				case 'l':
+				case 2: // startstats
 				{
+					boost::property_tree::ptree commandPivot = command.second;
+					boost::optional<uint32_t> optionalValue =  command.second.get_optional<uint32_t>("value");
+
+					if (optionalValue.is_initialized() )
+					{
+						proxy->StartStats(optionalValue.get());
+					}
+					else
+						proxy->StartStats();
+				}
+					break;
+				case 3: //stopstats
+				{
+					proxy->StopStats();
+				}
+					break;
+				case 4: //loglevel
+				{
+					boost::property_tree::ptree commandPivot = command.second;
+					boost::optional<std::string> optionalValue =  command.second.get_optional<std::string>("value");
+
+
 					LogLevelT newLogLevel = INFORMATIONAL;
-					if (strcmp(optarg, "DEBUG")==0 )
+					if (strcmp(optionalValue.get().c_str(), "DEBUG")==0 )
 					{
 						newLogLevel = DEBUG;
 					}
 					proxy->SetLogLevel(newLogLevel);
 				}
 					break;
-				case 't':
+
+				case 5: // sndBufferSize
 				{
-					proxy->StartStats(atoi(optarg));
-				}
+					boost::property_tree::ptree commandPivot = command.second;
+					boost::optional<uint32_t> optionalValue =  command.second.get_optional<uint32_t>("value");
+
+					proxy->SetSendBufferSize(optionalValue.get());
 					break;
-				case 'n':
+				}
+				case 6: // rcvBufferSize
 				{
-					proxy->StopStats();
-				}
+					boost::property_tree::ptree commandPivot = command.second;
+					boost::optional<uint32_t> optionalValue =  command.second.get_optional<uint32_t>("value");
+					proxy->SetRecvBufferSize(optionalValue.get());
 					break;
+				}
+
 				default:
 					retCode = -1;
 					break;
 			}
-		} // while
+		}
 	}
 	catch(std::exception& ex)
 	{
 		retCode = -1;
 		LOGINF("Exception caught in processing command %s", ex.what());
 	}
-	memset(&buff[0], ' ', sizeof(buff[0]));
-	strcpy(buff[0],(retCode == 0)? "success": "error");
-	SendData(buff[0],strlen(buff[0]));
 
-	if (shouldExit)
-		close(socketObj->socket);
+	// creating response
+
+	boost::property_tree::ptree retRoot, response;
+	response.put<std::string>("retCode", (retCode == 0)? "success": "error");
+	response.put<std::string>("msg", "");
+	retRoot.put_child("path1.path2", response);
+
+	std::stringstream ss;
+	write_json(ss, retRoot);
+
+	return ss.str();
 }
 
-void CommandLineInterface::SendData(void* buff,size_t size)
-{
-	write(clientSocket,(char*)buff,size);
-}
 } /* namespace mddproxy */
 } /* namespace mdm */

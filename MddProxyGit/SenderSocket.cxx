@@ -29,7 +29,7 @@ SenderSocket::~SenderSocket()
 void SenderSocket::ReceiveData()
 {}
 
-void SenderSocket::SendData(void* buff,size_t length)
+void SenderSocket::SendData(const char* buff,size_t length)
 {
 	if (sendto(socketObj->socket, buff, length, 0, (struct sockaddr*)&socketObj->addr, sizeof(struct sockaddr) ) < 0)
 		THROW( "Can't send data for address %s %s", (const char*) inet_ntoa(socketObj->addr.sin_addr), strerror_r(errno, errBuffer, ERROR_BUFF_SIZE));

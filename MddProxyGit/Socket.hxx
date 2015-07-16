@@ -37,7 +37,7 @@ public:
 	virtual AddrT* Create() = 0;
 	virtual void Close();
 	virtual void ReceiveData() = 0;
-	virtual void SendData(void*,size_t) = 0;
+	virtual void SendData(const char*,size_t) = 0;
 
 	virtual void SetBufferSize(size_t newBufferSize);
 

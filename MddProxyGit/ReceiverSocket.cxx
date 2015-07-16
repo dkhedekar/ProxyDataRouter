@@ -73,7 +73,7 @@ void ReceiverSocket::ReceiveData()
 	} while(count > 0);
 }
 
-void ReceiverSocket::SendData(void*,size_t)
+void ReceiverSocket::SendData(const char*,size_t)
 {}
 
 

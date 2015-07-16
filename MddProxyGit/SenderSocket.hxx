@@ -20,7 +20,7 @@ public:
 
 	AddrT* Create();
 	void ReceiveData();
-	void SendData(void*,size_t);
+	void SendData(const char*,size_t);
 
 	void EnableLoopback();
 	void DisableLoopback();

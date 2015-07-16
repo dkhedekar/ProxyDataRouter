@@ -35,6 +35,7 @@ public:
 	}
 
 	void StartStats(size_t frequency);
+	void StartStats();
 	void StopStats();
 
 private:

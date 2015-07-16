@@ -62,6 +62,11 @@ void MddProxy::StartStats(size_t frequency)
 	statsWriter->Start(frequency);
 }
 
+void MddProxy::StartStats()
+{
+	statsWriter->Start();
+}
+
 void MddProxy::StopStats()
 {
 	statsWriter->Stop();
