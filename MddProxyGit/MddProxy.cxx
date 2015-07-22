@@ -22,9 +22,9 @@ void CreateLoggerInstance(std::string& logFileDir, std::string& fileName)
 
 MddProxy::MddProxy(const std::string& configFileName, const ConfigFileFormatT& configFormat, std::string& logFileDir, std::string& logLevel)
 {
-	configReader.Load(configFileName,configFormat);
 	std::string fileName = "/MddProxy.log";
 	CreateLoggerInstance(logFileDir, fileName);
+	configReader.Load(configFileName,configFormat);
 	receivers = new WorkItemsT;
 	senders = new WorkItemsT;
 	statsWriter = new StatsWriter;
@@ -74,11 +74,14 @@ void MddProxy::StopStats()
 
 void MddProxy::SetLogLevel(LogLevelT newLogLevel)
 {
+	LOGINF("Setting log levels %s", newLogLevel == INFORMATIONAL ? "INFORMATIONAL" : "DEBUG");
 	LoggerInstance->SetLogLevel(newLogLevel);
 }
 
 void MddProxy::SetSendBufferSize(size_t newBufferSize)
 {
+	LOGINF("Setting send buffer size to %d", newBufferSize);
+
 	WorkItemsItT first = senders->begin();
 	WorkItemsItT last = senders->end();
 
@@ -89,6 +92,8 @@ void MddProxy::SetSendBufferSize(size_t newBufferSize)
 }
 void MddProxy::SetRecvBufferSize(size_t newBufferSize)
 {
+	LOGINF("Setting receive buffer size to %d", newBufferSize);
+
 	WorkItemsItT first = receivers->begin();
 	WorkItemsItT last = receivers->end();
 
@@ -98,6 +103,10 @@ void MddProxy::SetRecvBufferSize(size_t newBufferSize)
 	}
 }
 
+void MddProxy::AddNewWorkers(size_t count)
+{
+	workDispatcher->AddWorkers(count);
+}
 
 void MddProxy::FillAddr(AddrT* addr,MulticastGroupT& multicastGroup)
 {

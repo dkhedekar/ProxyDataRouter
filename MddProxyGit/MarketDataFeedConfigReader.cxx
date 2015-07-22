@@ -9,6 +9,7 @@
 #include <exception>
 #include <boost/foreach.hpp>
 #include "MddProxyException.hxx"
+#include "MddProxyRunLogger.hxx"
 
 namespace mdm {
 namespace mddproxy {
@@ -77,7 +78,17 @@ void MddFeedConfig::LoadReceivers(ptree& tree)
 				inputAddr->protocol = TCP;
 
 
-			receivers.insert(std::make_pair(inputAddr->id,inputAddr));
+			std::pair<boost::unordered_map<uint32_t, InputAddressT*>::iterator, bool> ret = receivers.insert(std::make_pair(inputAddr->id,inputAddr));
+			if (!ret.second)
+			{
+				LOGINF("Receiver ID %d <%s:%d> already existed. Can't replace. Please restart the proxy if subscription is required",
+						inputAddr->id,inputAddr->feedName.c_str());
+			}
+			else
+			{
+				LOGDEB("Receiver ID %d <%s> added",
+						inputAddr->id,inputAddr->address.c_str(), inputAddr->port);
+			}
 		}
 	}
 }
@@ -105,7 +116,17 @@ void MddFeedConfig::LoadSenders(ptree& tree)
 			else
 				outputAddr->protocol = TCP;
 
-			senders.insert(std::make_pair(outputAddr->id, outputAddr));
+			std::pair<boost::unordered_map<uint32_t, OutputAddressT*>::iterator, bool> ret =  senders.insert(std::make_pair(outputAddr->id, outputAddr));
+			if (!ret.second)
+			{
+				LOGINF("Sender ID %d <%s:%d> already existed. Can't replace. Please restart the proxy if subscription is required",
+						outputAddr->id,outputAddr->address.c_str(), outputAddr->port);
+			}
+			else
+			{
+				LOGDEB("Sender ID %d <%s:%d> added",
+						outputAddr->id,outputAddr->address.c_str(),outputAddr->port);
+			}
 		}
 	}
 }

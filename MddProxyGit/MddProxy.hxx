@@ -37,6 +37,7 @@ public:
 	void StartStats(size_t frequency);
 	void StartStats();
 	void StopStats();
+	void AddNewWorkers(size_t count=1);
 
 private:
 	MddFeedConfig configReader;

@@ -39,6 +39,8 @@ public:
 
 	void JoinThreads();
 
+	int AddWorkers(size_t count=1);
+
 private:
 	WorkItemsT*  receivers;
 	PendingWorkQueue<Socket*>* pendingItems;
@@ -50,7 +52,6 @@ private:
 
 	boost::mutex sync_lock;
 
-	int AddWorkers(size_t count=1);
 	Worker* CreateNewWorker();
 
 	bool GetFreeWorker(Worker* &worker);

@@ -53,9 +53,14 @@ void Logger::Log(int line,
 {
 	std::string logLevelString = logLevel == INFORMATIONAL ? "INFO" : "DEBUG";
 	timeval currTime = CommonFunctions::GetTime();
-	sprintf( logString, "%ld\t%d\t%s\t%s\t%s\t",
-			currTime.tv_sec * 1000000 + currTime.tv_usec,
-			line, file, func, logLevelString.c_str());
+
+	localtime_r(&currTime.tv_sec, &nowtm);
+	strftime(tmbuf, sizeof tmbuf, "%Y-%m-%d %H:%M:%S", &nowtm);
+
+	sprintf( logString, "%s.%06ld\t%d\t%s\t%s\t%s\t",
+				tmbuf, currTime.tv_usec,
+				line, file, func, logLevelString.c_str());
+
 	std::ofstream* writer = logFile.getLogger();
 	int hdrsz = strlen(logString);
 
@@ -86,5 +91,6 @@ void Logger::LogException(int line,
 	logFile.getLogger()->write(logString, strlen(logString));
 	logFile.leave();
 }
+
 } /* namespace mddproxy */
 } /* namespace mdm */

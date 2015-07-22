@@ -40,7 +40,7 @@ int WorkDispatcher::AddWorkers(size_t count)
 		Worker* newWorker = CreateNewWorker();
 		freeWorkers->push_back(newWorker);
 	}
-
+	LOGINF("Added %d new workers. Total worker count %d", count, totalWorkerCount);
 	return count;
 }
 

@@ -25,7 +25,6 @@
 
 #include <boost/foreach.hpp>
 
-
 namespace mdm {
 namespace mddproxy {
 
@@ -67,6 +66,7 @@ AddrT* CommandLineInterface::Create()
 	socklen_t optlen = sizeof(size_t);
 	getsockopt(socketObj->socket, SOL_SOCKET, SO_RCVBUF, &socketBufferSize, &optlen);
 
+	LOGINF("Created command line listener socket at <%d>", socketObj->interface.sin_port);
 	return socketObj;
 }
 
@@ -78,15 +78,20 @@ void CommandLineInterface::Listen()
 			(unsigned) ntohs(socketObj->addr.sin_port),
 			strerror_r(errno, errBuffer, ERROR_BUFF_SIZE));
 
+	LOGINF("Listening for command line listener clients at <%d>", socketObj->interface.sin_port);
+
 	do
 	{
-		struct sockaddr clientAddr;
+		struct sockaddr_in clientAddr;
 		socklen_t clientAddLen = sizeof (clientAddr);
-		clientSocket = accept(socketObj->socket, &clientAddr , &clientAddLen);
+		clientSocket = accept(socketObj->socket, (struct sockaddr *) &clientAddr , &clientAddLen);
 
 		THROW_IF(clientSocket < 0, "Error accepting client connection on %d err: %s",
 					(unsigned) ntohs(socketObj->addr.sin_port),
 					strerror_r(errno, errBuffer, ERROR_BUFF_SIZE));
+
+		LOGINF("Command line client connected at <%s>",
+				(const char*) inet_ntoa(clientAddr.sin_addr));
 
 		ReceiveData();
 	} while(!stopCommandIntf);
@@ -138,6 +143,7 @@ std::string CommandLineInterface::ProcessCommand(char* buffer, size_t inpBufferL
     		switch(id)
     		{
     			case 1: // stopproc
+    				LOGINF("Received command %d to stop the proxy", id);
 					proxy->Stop();
 					stopCommandIntf = true;
 					break;
@@ -146,7 +152,9 @@ std::string CommandLineInterface::ProcessCommand(char* buffer, size_t inpBufferL
 					boost::property_tree::ptree commandPivot = command.second;
 					boost::optional<uint32_t> optionalValue =  command.second.get_optional<uint32_t>("value");
 
-					if (optionalValue.is_initialized() )
+    				LOGINF("Received command %d to start stats logging with freq<%d>", id, optionalValue.is_initialized()? optionalValue.get() : 0 );
+
+    				if (optionalValue.is_initialized() )
 					{
 						proxy->StartStats(optionalValue.get());
 					}
@@ -156,6 +164,8 @@ std::string CommandLineInterface::ProcessCommand(char* buffer, size_t inpBufferL
 					break;
 				case 3: //stopstats
 				{
+    				LOGINF("Received command %d to stop stats logging", id);
+
 					proxy->StopStats();
 				}
 					break;
@@ -164,6 +174,8 @@ std::string CommandLineInterface::ProcessCommand(char* buffer, size_t inpBufferL
 					boost::property_tree::ptree commandPivot = command.second;
 					boost::optional<std::string> optionalValue =  command.second.get_optional<std::string>("value");
 
+    				LOGINF("Received command %d to set log level logging with freq<%s>", id,
+    						optionalValue.is_initialized()? optionalValue.get().c_str() : "None" );
 
 					LogLevelT newLogLevel = INFORMATIONAL;
 					if (strcmp(optionalValue.get().c_str(), "DEBUG")==0 )
@@ -179,6 +191,8 @@ std::string CommandLineInterface::ProcessCommand(char* buffer, size_t inpBufferL
 					boost::property_tree::ptree commandPivot = command.second;
 					boost::optional<uint32_t> optionalValue =  command.second.get_optional<uint32_t>("value");
 
+    				LOGINF("Received command %d to set send buffer size with value<%d>", id, optionalValue.is_initialized()? optionalValue.get() : 0 );
+
 					proxy->SetSendBufferSize(optionalValue.get());
 					break;
 				}
@@ -186,10 +200,22 @@ std::string CommandLineInterface::ProcessCommand(char* buffer, size_t inpBufferL
 				{
 					boost::property_tree::ptree commandPivot = command.second;
 					boost::optional<uint32_t> optionalValue =  command.second.get_optional<uint32_t>("value");
+
+					LOGINF("Received command %d to set receive buffer size with value<%d>", id, optionalValue.is_initialized()? optionalValue.get() : 0 );
+
 					proxy->SetRecvBufferSize(optionalValue.get());
 					break;
 				}
+				case 7: // worker threads
+				{
+					boost::property_tree::ptree commandPivot = command.second;
+					boost::optional<uint16_t> optionalValue =  command.second.get_optional<uint16_t>("value");
 
+    				LOGINF("Received command %d to add worker with count<%d>", id, optionalValue.is_initialized()? optionalValue.get() : 0 );
+
+					proxy->AddNewWorkers(optionalValue.get());
+					break;
+				}
 				default:
 					retCode = -1;
 					break;

@@ -47,16 +47,22 @@ public:
 	void SetLogLevel(LogLevelT);
 
 	LogLevelT GetLogLevel() { return logLevel; }
-	bool IsDebug() { return logLevel == DEBUG; }
+	inline bool IsDebug();
 
 private:
 	std::string absolutepath;
 	LogFile logFile;
 	char* logString;
 	LogLevelT logLevel;
+	char tmbuf[64];
+	struct tm nowtm;
 
 	bool Open(bool truncate = false);
 };
+
+
+inline bool Logger::IsDebug()
+{ return logLevel == DEBUG; }
 
 extern Logger* LoggerInstance;
 
