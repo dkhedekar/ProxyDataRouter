@@ -41,6 +41,8 @@ public:
 
 	int AddWorkers(size_t count=1);
 
+	void WakeUpAllThreads();
+
 private:
 	WorkItemsT*  receivers;
 	PendingWorkQueue<Socket*>* pendingItems;

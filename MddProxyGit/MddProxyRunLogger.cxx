@@ -51,7 +51,6 @@ void Logger::Log(int line,
 		const char *errorStr,
 		...)
 {
-	std::string logLevelString = logLevel == INFORMATIONAL ? "INFO" : "DEBUG";
 	timeval currTime = CommonFunctions::GetTime();
 
 	localtime_r(&currTime.tv_sec, &nowtm);
@@ -59,7 +58,7 @@ void Logger::Log(int line,
 
 	sprintf( logString, "%s.%06ld\t%d\t%s\t%s\t%s\t",
 				tmbuf, currTime.tv_usec,
-				line, file, func, logLevelString.c_str());
+				line, file, func, GetLogLevelString(logLevel).c_str());
 
 	std::ofstream* writer = logFile.getLogger();
 	int hdrsz = strlen(logString);
@@ -85,11 +84,19 @@ void Logger::LogException(int line,
 		const char *errorStr)
 {
 	timeval currTime = CommonFunctions::GetTime();
-	sprintf( logString, "%ld\t%d\t%s\t%s\t%s",
-			currTime.tv_sec * 1000000 + currTime.tv_usec,
+	localtime_r(&currTime.tv_sec, &nowtmErr);
+	strftime(tmbufErr, sizeof tmbuf, "%Y-%m-%d %H:%M:%S", &nowtmErr);
+
+	sprintf( logString, "%s.%06ld\t%d\t%s\t%s\t%s",
+			tmbufErr, currTime.tv_usec,
 			line, file, func,errorStr );
-	logFile.getLogger()->write(logString, strlen(logString));
+
+	std::ofstream* writer = logFile.getLogger();
+	writer->write(logString, strlen(logString));
+	writer->write("\n",1);
 	logFile.leave();
+
+	writer->flush();
 }
 
 } /* namespace mddproxy */

@@ -50,5 +50,10 @@ void Epoller::WaitForData(WorkDispatcher* dispatcher)
 		dispatcher->ProcessData(events,retFds);
 	}
 }
+
+void Epoller::CancelWait()
+{
+	close(ePollHandle);
+}
 } /* namespace mddproxy */
 } /* namespace mdm */

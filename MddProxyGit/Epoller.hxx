@@ -23,6 +23,8 @@ public:
 	void RegisterSocket(int sock);
 	void WaitForData(WorkDispatcher*);
 
+	void CancelWait();
+
 private:
 	// Epoll handle
 	int ePollHandle;

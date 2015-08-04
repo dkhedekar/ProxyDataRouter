@@ -57,6 +57,16 @@ Worker* WorkDispatcher::CreateNewWorker()
 	return newWorker;
 }
 
+void WorkDispatcher::WakeUpAllThreads()
+{
+	boost::mutex::scoped_lock lock(sync_lock);
+
+	BOOST_FOREACH(Worker *worker, workers)
+	{
+		worker->FinishAndDie();
+	}
+}
+
 void WorkDispatcher::ProcessData(struct epoll_event* evList, int eventCount)
 {
 	for (int i=0; i < eventCount; i++)

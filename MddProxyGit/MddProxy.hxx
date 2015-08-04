@@ -32,6 +32,8 @@ public:
 	void Stop()
 	{
 		continueProcessing = false;
+		epoller.CancelWait();
+		workDispatcher->WakeUpAllThreads();
 	}
 
 	void StartStats(size_t frequency);

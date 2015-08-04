@@ -79,9 +79,9 @@ void Worker::Resume()
 
 void Worker::FinishAndDie()
 {
+	LOGINF("Received Terminate for thread %ld ", thread);
 	myControlSlot->state = TERMINATE;
 	pthread_cond_signal(&thread_wait_cond);
-	pthread_exit(&thread);
 }
 
 void* Worker::Run()
@@ -112,6 +112,7 @@ void* Worker::Run()
 		THROW(ex.what());
 	}
 
+	pthread_exit(&thread);
 	return (void*)NULL;
 }
 

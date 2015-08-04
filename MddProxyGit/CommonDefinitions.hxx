@@ -8,6 +8,7 @@
 #ifndef COMMONDEFINITIONS_HXX_
 #define COMMONDEFINITIONS_HXX_
 
+#define READ_BUFF_SIZE 1024
 namespace mdm
 {
 namespace mddproxy

@@ -8,6 +8,7 @@
 #include "CommandLineInterface.hxx"
 #include "MddProxyException.hxx"
 #include "MddProxyRunLogger.hxx"
+#include "CommonDefinitions.hxx"
 
 #include <ifaddrs.h>
 #include <net/if.h>
@@ -22,7 +23,8 @@
 #include <getopt.h>
 #include <exception>
 #include <iostream>
-
+#include <sys/types.h>
+#include <sys/socket.h>
 #include <boost/foreach.hpp>
 
 namespace mdm {
@@ -99,21 +101,42 @@ void CommandLineInterface::Listen()
 	if (stopCommandIntf)
 		close(socketObj->socket);
 }
+
+
 void CommandLineInterface::ReceiveData()
 {
-	char* buff = new char[1024];
+	char* buff = new char[READ_BUFF_SIZE];
 
 	while(!stopCommandIntf)
 	{
 		try
 		{
-			int readcount = read(clientSocket, buff, sizeof(buff));
-			std::string response =	ProcessCommand(buff, readcount);
-			SendData(response.c_str(),response.length());
+			int readcount = recv(clientSocket, buff, READ_BUFF_SIZE, NULL);
+			LOGINF("Read %d bytes from the client", readcount);
+
+			LOGINF("Command from client %s", buff);
+
+			if (readcount > 0 )
+			{
+				std::string response =	ProcessCommand(buff, readcount);
+				LOGINF("Sending response to client => %s", response.c_str());
+				SendData(response.c_str(),response.length());
+			}
+			else if (readcount == -1 )
+			{
+				THROW("Error in reading data from client. Client connection aborted => %s",
+						strerror_r( errno, errBuffer, ERROR_BUFF_SIZE));
+			}
+			else // readcount == 0
+			{
+				LOGINF("Client closed the socket");
+				close(clientSocket);
+			}
 		}
 		catch(std::exception& ex)
 		{
-			LOGINF("Exception caught in processing command %s", ex.what());
+			close(clientSocket);
+			LOGERR("Exception caught in processing command %s", ex.what());
 			break;
 		}
 	}
@@ -121,24 +144,29 @@ void CommandLineInterface::ReceiveData()
 
 void CommandLineInterface::SendData(const char* buff,size_t size)
 {
-	write(clientSocket,(char*)buff,size);
+	send(clientSocket, buff,size, NULL);
 }
+
 std::string CommandLineInterface::ProcessCommand(char* buffer, size_t inpBufferLen)
 {
 	pt::ptree tree;
 
-    membuf stbuf(buffer, buffer + inpBufferLen);
-    std::istream is(&stbuf);
+    //membuf stbuf(buffer, buffer + inpBufferLen);
+    std::string strCommand(buffer, inpBufferLen);
+    std::string strCommandTest("[{\"name\": \"stopproc\",\"id\":1}]");
+    std::stringstream is;
+    is << strCommandTest;
 
+    LOGINF("Command => %s", is.str().c_str());
     int retCode = 0 ;
 	try
 	{
     	pt::read_json(is, tree);
 
-    	BOOST_FOREACH( ptree::value_type const&command, tree.get_child("commands") )
+    	BOOST_FOREACH( ptree::value_type const&command, tree )
 		{
-    		std::string commandName = command.second.get<std::string>("<xmlattr>.name");
-    		uint8_t id = command.second.get<uint8_t>("<xmlattr>.id");
+    		std::string commandName = command.second.get<std::string>("name");
+    		uint8_t id = command.second.get<uint8_t>("id");
 
     		switch(id)
     		{
@@ -225,15 +253,15 @@ std::string CommandLineInterface::ProcessCommand(char* buffer, size_t inpBufferL
 	catch(std::exception& ex)
 	{
 		retCode = -1;
-		LOGINF("Exception caught in processing command %s", ex.what());
+		LOGERR("Exception caught in processing command %s", ex.what());
 	}
 
 	// creating response
 
 	boost::property_tree::ptree retRoot, response;
-	response.put<std::string>("retCode", (retCode == 0)? "success": "error");
-	response.put<std::string>("msg", "");
-	retRoot.put_child("path1.path2", response);
+	response.put<int8_t>("retCode", retCode);
+	//response.put<std::string>("msg", "");
+	retRoot.put_child("response", response);
 
 	std::stringstream ss;
 	write_json(ss, retRoot);
